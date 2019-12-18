@@ -132,7 +132,7 @@ Paho.MQTT = (function (global) {
 			if (obj.hasOwnProperty(key)) {
 				if (keys.hasOwnProperty(key)) {
 					if (typeof obj[key] !== keys[key])
-					   throw new Error(format(ERROR.INVALID_TYPE, [typeof obj[key], key]));
+						throw new Error(format(ERROR.INVALID_TYPE, [typeof obj[key], key]));
 				} else {
 					var errorStr = "Unknown property, " + key + ". Valid properties are:";
 					for (var key in keys)
@@ -204,16 +204,16 @@ Paho.MQTT = (function (global) {
 	var format = function(error, substitutions) {
 		var text = error.text;
 		if (substitutions) {
-		  var field,start;
-		  for (var i=0; i<substitutions.length; i++) {
-			field = "{"+i+"}";
-			start = text.indexOf(field);
-			if(start > 0) {
-				var part1 = text.substring(0,start);
-				var part2 = text.substring(start+field.length);
-				text = part1+substitutions[i]+part2;
+			var field,start;
+			for (var i=0; i<substitutions.length; i++) {
+				field = "{"+i+"}";
+				start = text.indexOf(field);
+				if(start > 0) {
+					var part1 = text.substring(0,start);
+					var part2 = text.substring(start+field.length);
+					text = part1+substitutions[i]+part2;
+				}
 			}
-		  }
 		}
 		return text;
 	};
@@ -274,7 +274,7 @@ Paho.MQTT = (function (global) {
 			remLength += 2;
 
 		switch(this.type) {
-			// If this a Connect then we need to include 12 bytes for its header
+				// If this a Connect then we need to include 12 bytes for its header
 			case MESSAGE_TYPE.CONNECT:
 				switch(this.mqttVersion) {
 					case 3:
@@ -298,9 +298,9 @@ Paho.MQTT = (function (global) {
 					remLength += UTF8Length(this.userName) + 2;
 				if (this.password != undefined)
 					remLength += UTF8Length(this.password) + 2;
-			break;
+				break;
 
-			// Subscribe, Unsubscribe can both contain topic strings
+				// Subscribe, Unsubscribe can both contain topic strings
 			case MESSAGE_TYPE.SUBSCRIBE:
 				first |= 0x02; // Qos = 1;
 				for ( var i = 0; i < this.topics.length; i++) {
@@ -403,11 +403,11 @@ Paho.MQTT = (function (global) {
 					pos += willMessagePayloadBytes.byteLength;
 
 				}
-			if (this.userName != undefined)
-				pos = writeString(this.userName, UTF8Length(this.userName), byteStream, pos);
-			if (this.password != undefined)
-				pos = writeString(this.password, UTF8Length(this.password), byteStream, pos);
-			break;
+				if (this.userName != undefined)
+					pos = writeString(this.userName, UTF8Length(this.userName), byteStream, pos);
+				if (this.password != undefined)
+					pos = writeString(this.password, UTF8Length(this.password), byteStream, pos);
+				break;
 
 			case MESSAGE_TYPE.PUBLISH:
 				// PUBLISH has a text or binary payload, if text do not add a 2 byte length field, just the UTF characters.
@@ -442,7 +442,7 @@ Paho.MQTT = (function (global) {
 	}
 
 	function decodeMessage(input,pos) {
-	    var startingPos = pos;
+		var startingPos = pos;
 		var first = input[pos];
 		var type = first >> 4;
 		var messageInfo = first &= 0x0f;
@@ -456,7 +456,7 @@ Paho.MQTT = (function (global) {
 		var multiplier = 1;
 		do {
 			if (pos == input.length) {
-			    return [null,startingPos];
+				return [null,startingPos];
 			}
 			digit = input[pos++];
 			remLength += ((digit & 0x7F) * multiplier);
@@ -465,7 +465,7 @@ Paho.MQTT = (function (global) {
 
 		var endPos = pos+remLength;
 		if (endPos > input.length) {
-		    return [null,startingPos];
+			return [null,startingPos];
 		}
 
 		var wireMessage = new WireMessage(type);
@@ -566,16 +566,16 @@ Paho.MQTT = (function (global) {
 		for (var i = 0; i<input.length; i++)
 		{
 			var charCode = input.charCodeAt(i);
-				if (charCode > 0x7FF)
-				   {
-					  // Surrogate pair means its a 4 byte character
-					  if (0xD800 <= charCode && charCode <= 0xDBFF)
-						{
-						  i++;
-						  output++;
-						}
-				   output +=3;
-				   }
+			if (charCode > 0x7FF)
+			{
+				// Surrogate pair means its a 4 byte character
+				if (0xD800 <= charCode && charCode <= 0xDBFF)
+				{
+					i++;
+					output++;
+				}
+				output +=3;
+			}
 			else if (charCode > 0x7F)
 				output +=2;
 			else
@@ -646,25 +646,25 @@ Paho.MQTT = (function (global) {
 						throw new Error(format(ERROR.MALFORMED_UTF, [byte1.toString(16), byte2.toString(16), byte3.toString(16)]));
 					if (byte1 < 0xF0)        // 3 byte character
 						utf16 = 4096*(byte1-0xE0) + 64*byte2 + byte3;
-								else
-								{
-								   var byte4 = input[pos++]-128;
-								   if (byte4 < 0)
-						throw new Error(format(ERROR.MALFORMED_UTF, [byte1.toString(16), byte2.toString(16), byte3.toString(16), byte4.toString(16)]));
-								   if (byte1 < 0xF8)        // 4 byte character
-										   utf16 = 262144*(byte1-0xF0) + 4096*byte2 + 64*byte3 + byte4;
-					   else                     // longer encodings are not supported
-						throw new Error(format(ERROR.MALFORMED_UTF, [byte1.toString(16), byte2.toString(16), byte3.toString(16), byte4.toString(16)]));
-								}
+					else
+					{
+						var byte4 = input[pos++]-128;
+						if (byte4 < 0)
+							throw new Error(format(ERROR.MALFORMED_UTF, [byte1.toString(16), byte2.toString(16), byte3.toString(16), byte4.toString(16)]));
+						if (byte1 < 0xF8)        // 4 byte character
+							utf16 = 262144*(byte1-0xF0) + 4096*byte2 + 64*byte3 + byte4;
+						else                     // longer encodings are not supported
+							throw new Error(format(ERROR.MALFORMED_UTF, [byte1.toString(16), byte2.toString(16), byte3.toString(16), byte4.toString(16)]));
+					}
 				}
 			}
 
-				if (utf16 > 0xFFFF)   // 4 byte character - express as a surrogate pair
-				  {
-					 utf16 -= 0x10000;
-					 output += String.fromCharCode(0xD800 + (utf16 >> 10)); // lead character
-					 utf16 = 0xDC00 + (utf16 & 0x3FF);  // trail character
-				  }
+			if (utf16 > 0xFFFF)   // 4 byte character - express as a surrogate pair
+			{
+				utf16 -= 0x10000;
+				output += String.fromCharCode(0xD800 + (utf16 >> 10)); // lead character
+				utf16 = 0xDC00 + (utf16 & 0x3FF);  // trail character
+			}
 			output += String.fromCharCode(utf16);
 		}
 		return output;
@@ -711,7 +711,7 @@ Paho.MQTT = (function (global) {
 		this.cancel = function() {
 			this._window.clearTimeout(this.timeout);
 		}
-	 };
+	};
 
 	/**
 	 * Monitor request completion.
@@ -794,8 +794,8 @@ Paho.MQTT = (function (global) {
 		// Load the local state, if any, from the saved version, only restore state relevant to this client.
 		for (var key in localStorage)
 			if (   key.indexOf("Sent:"+this._localKey) == 0
-				|| key.indexOf("Received:"+this._localKey) == 0)
-			this.restore(key);
+					|| key.indexOf("Received:"+this._localKey) == 0)
+				this.restore(key);
 	};
 
 	// Messaging Client public instance members.
@@ -889,7 +889,7 @@ Paho.MQTT = (function (global) {
 		this._trace("Client.unsubscribe", filter, unsubscribeOptions);
 
 		if (!this.connected)
-		   throw new Error(format(ERROR.INVALID_STATE, ["not connected"]));
+			throw new Error(format(ERROR.INVALID_STATE, ["not connected"]));
 
 		var wireMessage = new WireMessage(MESSAGE_TYPE.UNSUBSCRIBE);
 		wireMessage.topics = [filter];
@@ -913,9 +913,9 @@ Paho.MQTT = (function (global) {
 		this._trace("Client.send", message);
 
 		if (!this.connected)
-		   throw new Error(format(ERROR.INVALID_STATE, ["not connected"]));
+			throw new Error(format(ERROR.INVALID_STATE, ["not connected"]));
 
-		wireMessage = new WireMessage(MESSAGE_TYPE.PUBLISH);
+		var wireMessage = new WireMessage(MESSAGE_TYPE.PUBLISH);
 		wireMessage.payloadMessage = message;
 
 		if (message.qos > 0)
@@ -931,7 +931,7 @@ Paho.MQTT = (function (global) {
 		if (!this.socket)
 			throw new Error(format(ERROR.INVALID_STATE, ["not connecting or connected"]));
 
-		wireMessage = new WireMessage(MESSAGE_TYPE.DISCONNECT);
+		var wireMessage = new WireMessage(MESSAGE_TYPE.DISCONNECT);
 
 		// Run the disconnected call back as soon as the message has been sent,
 		// in case of a failure later on in the disconnect processing.
@@ -968,9 +968,9 @@ Paho.MQTT = (function (global) {
 	ClientImpl.prototype._doConnect = function (wsurl) {
 		// When the socket is open, this client will send the CONNECT WireMessage using the saved parameters.
 		if (this.connectOptions.useSSL) {
-		    var uriParts = wsurl.split(":");
-		    uriParts[0] = "wss";
-		    wsurl = uriParts.join(":");
+			var uriParts = wsurl.split(":");
+			uriParts[0] = "wss";
+			wsurl = uriParts.join(":");
 		}
 		this.connected = false;
 		if (this.connectOptions.mqttVersion < 4) {
@@ -1009,36 +1009,36 @@ Paho.MQTT = (function (global) {
 		var storedMessage = {type:wireMessage.type, messageIdentifier:wireMessage.messageIdentifier, version:1};
 
 		switch(wireMessage.type) {
-		  case MESSAGE_TYPE.PUBLISH:
-			  if(wireMessage.pubRecReceived)
-				  storedMessage.pubRecReceived = true;
+			case MESSAGE_TYPE.PUBLISH:
+				if(wireMessage.pubRecReceived)
+					storedMessage.pubRecReceived = true;
 
-			  // Convert the payload to a hex string.
-			  storedMessage.payloadMessage = {};
-			  var hex = "";
-			  var messageBytes = wireMessage.payloadMessage.payloadBytes;
-			  for (var i=0; i<messageBytes.length; i++) {
-				if (messageBytes[i] <= 0xF)
-				  hex = hex+"0"+messageBytes[i].toString(16);
-				else
-				  hex = hex+messageBytes[i].toString(16);
-			  }
-			  storedMessage.payloadMessage.payloadHex = hex;
+				// Convert the payload to a hex string.
+				storedMessage.payloadMessage = {};
+				var hex = "";
+				var messageBytes = wireMessage.payloadMessage.payloadBytes;
+				for (var i=0; i<messageBytes.length; i++) {
+					if (messageBytes[i] <= 0xF)
+						hex = hex+"0"+messageBytes[i].toString(16);
+					else
+						hex = hex+messageBytes[i].toString(16);
+				}
+				storedMessage.payloadMessage.payloadHex = hex;
 
-			  storedMessage.payloadMessage.qos = wireMessage.payloadMessage.qos;
-			  storedMessage.payloadMessage.destinationName = wireMessage.payloadMessage.destinationName;
-			  if (wireMessage.payloadMessage.duplicate)
-				  storedMessage.payloadMessage.duplicate = true;
-			  if (wireMessage.payloadMessage.retained)
-				  storedMessage.payloadMessage.retained = true;
+				storedMessage.payloadMessage.qos = wireMessage.payloadMessage.qos;
+				storedMessage.payloadMessage.destinationName = wireMessage.payloadMessage.destinationName;
+				if (wireMessage.payloadMessage.duplicate)
+					storedMessage.payloadMessage.duplicate = true;
+				if (wireMessage.payloadMessage.retained)
+					storedMessage.payloadMessage.retained = true;
 
-			  // Add a sequence number to sent messages.
-			  if ( prefix.indexOf("Sent:") == 0 ) {
-				  if ( wireMessage.sequence === undefined )
-					  wireMessage.sequence = ++this._sequence;
-				  storedMessage.sequence = wireMessage.sequence;
-			  }
-			  break;
+				// Add a sequence number to sent messages.
+				if ( prefix.indexOf("Sent:") == 0 ) {
+					if ( wireMessage.sequence === undefined )
+						wireMessage.sequence = ++this._sequence;
+					storedMessage.sequence = wireMessage.sequence;
+				}
+				break;
 
 			default:
 				throw Error(format(ERROR.INVALID_STORED_DATA, [key, storedMessage]));
@@ -1053,31 +1053,31 @@ Paho.MQTT = (function (global) {
 		var wireMessage = new WireMessage(storedMessage.type, storedMessage);
 
 		switch(storedMessage.type) {
-		  case MESSAGE_TYPE.PUBLISH:
-			  // Replace the payload message with a Message object.
-			  var hex = storedMessage.payloadMessage.payloadHex;
-			  var buffer = new ArrayBuffer((hex.length)/2);
-			  var byteStream = new Uint8Array(buffer);
-			  var i = 0;
-			  while (hex.length >= 2) {
-				  var x = parseInt(hex.substring(0, 2), 16);
-				  hex = hex.substring(2, hex.length);
-				  byteStream[i++] = x;
-			  }
-			  var payloadMessage = new Paho.MQTT.Message(byteStream);
+			case MESSAGE_TYPE.PUBLISH:
+				// Replace the payload message with a Message object.
+				var hex = storedMessage.payloadMessage.payloadHex;
+				var buffer = new ArrayBuffer((hex.length)/2);
+				var byteStream = new Uint8Array(buffer);
+				var i = 0;
+				while (hex.length >= 2) {
+					var x = parseInt(hex.substring(0, 2), 16);
+					hex = hex.substring(2, hex.length);
+					byteStream[i++] = x;
+				}
+				var payloadMessage = new Paho.MQTT.Message(byteStream);
 
-			  payloadMessage.qos = storedMessage.payloadMessage.qos;
-			  payloadMessage.destinationName = storedMessage.payloadMessage.destinationName;
-			  if (storedMessage.payloadMessage.duplicate)
-				  payloadMessage.duplicate = true;
-			  if (storedMessage.payloadMessage.retained)
-				  payloadMessage.retained = true;
-			  wireMessage.payloadMessage = payloadMessage;
+				payloadMessage.qos = storedMessage.payloadMessage.qos;
+				payloadMessage.destinationName = storedMessage.payloadMessage.destinationName;
+				if (storedMessage.payloadMessage.duplicate)
+					payloadMessage.duplicate = true;
+				if (storedMessage.payloadMessage.retained)
+					payloadMessage.retained = true;
+				wireMessage.payloadMessage = payloadMessage;
 
-			  break;
+				break;
 
 			default:
-			  throw Error(format(ERROR.INVALID_STORED_DATA, [key, value]));
+				throw Error(format(ERROR.INVALID_STORED_DATA, [key, value]));
 		}
 
 		if (key.indexOf("Sent:"+this._localKey) == 0) {
@@ -1148,35 +1148,35 @@ Paho.MQTT = (function (global) {
 		this.receivePinger.reset();
 		var messages = this._deframeMessages(event.data);
 		for (var i = 0; i < messages.length; i+=1) {
-		    this._handleMessage(messages[i]);
+			this._handleMessage(messages[i]);
 		}
 	}
 
 	ClientImpl.prototype._deframeMessages = function(data) {
 		var byteArray = new Uint8Array(data);
-	    if (this.receiveBuffer) {
-	        var newData = new Uint8Array(this.receiveBuffer.length+byteArray.length);
-	        newData.set(this.receiveBuffer);
-	        newData.set(byteArray,this.receiveBuffer.length);
-	        byteArray = newData;
-	        delete this.receiveBuffer;
-	    }
+		if (this.receiveBuffer) {
+			var newData = new Uint8Array(this.receiveBuffer.length+byteArray.length);
+			newData.set(this.receiveBuffer);
+			newData.set(byteArray,this.receiveBuffer.length);
+			byteArray = newData;
+			delete this.receiveBuffer;
+		}
 		try {
-		    var offset = 0;
-		    var messages = [];
-		    while(offset < byteArray.length) {
-		        var result = decodeMessage(byteArray,offset);
-		        var wireMessage = result[0];
-		        offset = result[1];
-		        if (wireMessage !== null) {
-		            messages.push(wireMessage);
-		        } else {
-		            break;
-		        }
-		    }
-		    if (offset < byteArray.length) {
-		    	this.receiveBuffer = byteArray.subarray(offset);
-		    }
+			var offset = 0;
+			var messages = [];
+			while(offset < byteArray.length) {
+				var result = decodeMessage(byteArray,offset);
+				var wireMessage = result[0];
+				offset = result[1];
+				if (wireMessage !== null) {
+					messages.push(wireMessage);
+				} else {
+					break;
+				}
+			}
+			if (offset < byteArray.length) {
+				this.receiveBuffer = byteArray.subarray(offset);
+			}
 		} catch (error) {
 			this._disconnected(ERROR.INTERNAL_ERROR.code , format(ERROR.INTERNAL_ERROR, [error.message,error.stack.toString()]));
 			return;
@@ -1190,151 +1190,151 @@ Paho.MQTT = (function (global) {
 
 		try {
 			switch(wireMessage.type) {
-			case MESSAGE_TYPE.CONNACK:
-				this._connectTimeout.cancel();
+				case MESSAGE_TYPE.CONNACK:
+					this._connectTimeout.cancel();
 
-				// If we have started using clean session then clear up the local state.
-				if (this.connectOptions.cleanSession) {
-					for (var key in this._sentMessages) {
-						var sentMessage = this._sentMessages[key];
-						localStorage.removeItem("Sent:"+this._localKey+sentMessage.messageIdentifier);
+					// If we have started using clean session then clear up the local state.
+					if (this.connectOptions.cleanSession) {
+						for (var key in this._sentMessages) {
+							var sentMessage = this._sentMessages[key];
+							localStorage.removeItem("Sent:"+this._localKey+sentMessage.messageIdentifier);
+						}
+						this._sentMessages = {};
+
+						for (var key in this._receivedMessages) {
+							var receivedMessage = this._receivedMessages[key];
+							localStorage.removeItem("Received:"+this._localKey+receivedMessage.messageIdentifier);
+						}
+						this._receivedMessages = {};
 					}
-					this._sentMessages = {};
-
-					for (var key in this._receivedMessages) {
-						var receivedMessage = this._receivedMessages[key];
-						localStorage.removeItem("Received:"+this._localKey+receivedMessage.messageIdentifier);
-					}
-					this._receivedMessages = {};
-				}
-				// Client connected and ready for business.
-				if (wireMessage.returnCode === 0) {
-					this.connected = true;
-					// Jump to the end of the list of uris and stop looking for a good host.
-					if (this.connectOptions.uris)
-						this.hostIndex = this.connectOptions.uris.length;
-				} else {
-					this._disconnected(ERROR.CONNACK_RETURNCODE.code , format(ERROR.CONNACK_RETURNCODE, [wireMessage.returnCode, CONNACK_RC[wireMessage.returnCode]]));
-					break;
-				}
-
-				// Resend messages.
-				var sequencedMessages = new Array();
-				for (var msgId in this._sentMessages) {
-					if (this._sentMessages.hasOwnProperty(msgId))
-						sequencedMessages.push(this._sentMessages[msgId]);
-				}
-
-				// Sort sentMessages into the original sent order.
-				var sequencedMessages = sequencedMessages.sort(function(a,b) {return a.sequence - b.sequence;} );
-				for (var i=0, len=sequencedMessages.length; i<len; i++) {
-					var sentMessage = sequencedMessages[i];
-					if (sentMessage.type == MESSAGE_TYPE.PUBLISH && sentMessage.pubRecReceived) {
-						var pubRelMessage = new WireMessage(MESSAGE_TYPE.PUBREL, {messageIdentifier:sentMessage.messageIdentifier});
-						this._schedule_message(pubRelMessage);
+					// Client connected and ready for business.
+					if (wireMessage.returnCode === 0) {
+						this.connected = true;
+						// Jump to the end of the list of uris and stop looking for a good host.
+						if (this.connectOptions.uris)
+							this.hostIndex = this.connectOptions.uris.length;
 					} else {
-						this._schedule_message(sentMessage);
-					};
-				}
+						this._disconnected(ERROR.CONNACK_RETURNCODE.code , format(ERROR.CONNACK_RETURNCODE, [wireMessage.returnCode, CONNACK_RC[wireMessage.returnCode]]));
+						break;
+					}
 
-				// Execute the connectOptions.onSuccess callback if there is one.
-				if (this.connectOptions.onSuccess) {
-					this.connectOptions.onSuccess({invocationContext:this.connectOptions.invocationContext});
-				}
+					// Resend messages.
+					var sequencedMessages = new Array();
+					for (var msgId in this._sentMessages) {
+						if (this._sentMessages.hasOwnProperty(msgId))
+							sequencedMessages.push(this._sentMessages[msgId]);
+					}
 
-				// Process all queued messages now that the connection is established.
-				this._process_queue();
-				break;
+					// Sort sentMessages into the original sent order.
+					var sequencedMessages = sequencedMessages.sort(function(a,b) {return a.sequence - b.sequence;} );
+					for (var i=0, len=sequencedMessages.length; i<len; i++) {
+						var sentMessage = sequencedMessages[i];
+						if (sentMessage.type == MESSAGE_TYPE.PUBLISH && sentMessage.pubRecReceived) {
+							var pubRelMessage = new WireMessage(MESSAGE_TYPE.PUBREL, {messageIdentifier:sentMessage.messageIdentifier});
+							this._schedule_message(pubRelMessage);
+						} else {
+							this._schedule_message(sentMessage);
+						};
+					}
 
-			case MESSAGE_TYPE.PUBLISH:
-				this._receivePublish(wireMessage);
-				break;
+					// Execute the connectOptions.onSuccess callback if there is one.
+					if (this.connectOptions.onSuccess) {
+						this.connectOptions.onSuccess({invocationContext:this.connectOptions.invocationContext});
+					}
 
-			case MESSAGE_TYPE.PUBACK:
-				var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
-				 // If this is a re flow of a PUBACK after we have restarted receivedMessage will not exist.
-				if (sentMessage) {
+					// Process all queued messages now that the connection is established.
+					this._process_queue();
+					break;
+
+				case MESSAGE_TYPE.PUBLISH:
+					this._receivePublish(wireMessage);
+					break;
+
+				case MESSAGE_TYPE.PUBACK:
+					var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
+					// If this is a re flow of a PUBACK after we have restarted receivedMessage will not exist.
+					if (sentMessage) {
+						delete this._sentMessages[wireMessage.messageIdentifier];
+						localStorage.removeItem("Sent:"+this._localKey+wireMessage.messageIdentifier);
+						if (this.onMessageDelivered)
+							this.onMessageDelivered(sentMessage.payloadMessage);
+					}
+					break;
+
+				case MESSAGE_TYPE.PUBREC:
+					var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
+					// If this is a re flow of a PUBREC after we have restarted receivedMessage will not exist.
+					if (sentMessage) {
+						sentMessage.pubRecReceived = true;
+						var pubRelMessage = new WireMessage(MESSAGE_TYPE.PUBREL, {messageIdentifier:wireMessage.messageIdentifier});
+						this.store("Sent:", sentMessage);
+						this._schedule_message(pubRelMessage);
+					}
+					break;
+
+				case MESSAGE_TYPE.PUBREL:
+					var receivedMessage = this._receivedMessages[wireMessage.messageIdentifier];
+					localStorage.removeItem("Received:"+this._localKey+wireMessage.messageIdentifier);
+					// If this is a re flow of a PUBREL after we have restarted receivedMessage will not exist.
+					if (receivedMessage) {
+						this._receiveMessage(receivedMessage);
+						delete this._receivedMessages[wireMessage.messageIdentifier];
+					}
+					// Always flow PubComp, we may have previously flowed PubComp but the server lost it and restarted.
+					var pubCompMessage = new WireMessage(MESSAGE_TYPE.PUBCOMP, {messageIdentifier:wireMessage.messageIdentifier});
+					this._schedule_message(pubCompMessage);
+					break;
+
+				case MESSAGE_TYPE.PUBCOMP:
+					var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
 					delete this._sentMessages[wireMessage.messageIdentifier];
 					localStorage.removeItem("Sent:"+this._localKey+wireMessage.messageIdentifier);
 					if (this.onMessageDelivered)
 						this.onMessageDelivered(sentMessage.payloadMessage);
-				}
-				break;
+					break;
 
-			case MESSAGE_TYPE.PUBREC:
-				var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
-				// If this is a re flow of a PUBREC after we have restarted receivedMessage will not exist.
-				if (sentMessage) {
-					sentMessage.pubRecReceived = true;
-					var pubRelMessage = new WireMessage(MESSAGE_TYPE.PUBREL, {messageIdentifier:wireMessage.messageIdentifier});
-					this.store("Sent:", sentMessage);
-					this._schedule_message(pubRelMessage);
-				}
-				break;
-
-			case MESSAGE_TYPE.PUBREL:
-				var receivedMessage = this._receivedMessages[wireMessage.messageIdentifier];
-				localStorage.removeItem("Received:"+this._localKey+wireMessage.messageIdentifier);
-				// If this is a re flow of a PUBREL after we have restarted receivedMessage will not exist.
-				if (receivedMessage) {
-					this._receiveMessage(receivedMessage);
-					delete this._receivedMessages[wireMessage.messageIdentifier];
-				}
-				// Always flow PubComp, we may have previously flowed PubComp but the server lost it and restarted.
-				var pubCompMessage = new WireMessage(MESSAGE_TYPE.PUBCOMP, {messageIdentifier:wireMessage.messageIdentifier});
-				this._schedule_message(pubCompMessage);
-				break;
-
-			case MESSAGE_TYPE.PUBCOMP:
-				var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
-				delete this._sentMessages[wireMessage.messageIdentifier];
-				localStorage.removeItem("Sent:"+this._localKey+wireMessage.messageIdentifier);
-				if (this.onMessageDelivered)
-					this.onMessageDelivered(sentMessage.payloadMessage);
-				break;
-
-			case MESSAGE_TYPE.SUBACK:
-				var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
-				if (sentMessage) {
-					if(sentMessage.timeOut)
-						sentMessage.timeOut.cancel();
-					// This will need to be fixed when we add multiple topic support
-          			if (wireMessage.returnCode[0] === 0x80) {
-						if (sentMessage.onFailure) {
-							sentMessage.onFailure(wireMessage.returnCode);
+				case MESSAGE_TYPE.SUBACK:
+					var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
+					if (sentMessage) {
+						if(sentMessage.timeOut)
+							sentMessage.timeOut.cancel();
+						// This will need to be fixed when we add multiple topic support
+						if (wireMessage.returnCode[0] === 0x80) {
+							if (sentMessage.onFailure) {
+								sentMessage.onFailure(wireMessage.returnCode);
+							}
+						} else if (sentMessage.onSuccess) {
+							sentMessage.onSuccess(wireMessage.returnCode);
 						}
-					} else if (sentMessage.onSuccess) {
-						sentMessage.onSuccess(wireMessage.returnCode);
+						delete this._sentMessages[wireMessage.messageIdentifier];
 					}
-					delete this._sentMessages[wireMessage.messageIdentifier];
-				}
-				break;
+					break;
 
-			case MESSAGE_TYPE.UNSUBACK:
-				var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
-				if (sentMessage) {
-					if (sentMessage.timeOut)
-						sentMessage.timeOut.cancel();
-					if (sentMessage.callback) {
-						sentMessage.callback();
+				case MESSAGE_TYPE.UNSUBACK:
+					var sentMessage = this._sentMessages[wireMessage.messageIdentifier];
+					if (sentMessage) {
+						if (sentMessage.timeOut)
+							sentMessage.timeOut.cancel();
+						if (sentMessage.callback) {
+							sentMessage.callback();
+						}
+						delete this._sentMessages[wireMessage.messageIdentifier];
 					}
-					delete this._sentMessages[wireMessage.messageIdentifier];
-				}
 
-				break;
+					break;
 
-			case MESSAGE_TYPE.PINGRESP:
-				/* The sendPinger or receivePinger may have sent a ping, the receivePinger has already been reset. */
-				this.sendPinger.reset();
-				break;
+				case MESSAGE_TYPE.PINGRESP:
+					/* The sendPinger or receivePinger may have sent a ping, the receivePinger has already been reset. */
+					this.sendPinger.reset();
+					break;
 
-			case MESSAGE_TYPE.DISCONNECT:
-				// Clients do not expect to receive disconnect packets.
-				this._disconnected(ERROR.INVALID_MQTT_MESSAGE_TYPE.code , format(ERROR.INVALID_MQTT_MESSAGE_TYPE, [wireMessage.type]));
-				break;
+				case MESSAGE_TYPE.DISCONNECT:
+					// Clients do not expect to receive disconnect packets.
+					this._disconnected(ERROR.INVALID_MQTT_MESSAGE_TYPE.code , format(ERROR.INVALID_MQTT_MESSAGE_TYPE, [wireMessage.type]));
+					break;
 
-			default:
-				this._disconnected(ERROR.INVALID_MQTT_MESSAGE_TYPE.code , format(ERROR.INVALID_MQTT_MESSAGE_TYPE, [wireMessage.type]));
+				default:
+					this._disconnected(ERROR.INVALID_MQTT_MESSAGE_TYPE.code , format(ERROR.INVALID_MQTT_MESSAGE_TYPE, [wireMessage.type]));
 			};
 		} catch (error) {
 			this._disconnected(ERROR.INTERNAL_ERROR.code , format(ERROR.INTERNAL_ERROR, [error.message,error.stack.toString()]));
@@ -1487,7 +1487,7 @@ Paho.MQTT = (function (global) {
 				if (i === 0) this._traceBuffer.push(arguments[i]);
 				else if (typeof arguments[i] === "undefined" ) this._traceBuffer.push(arguments[i]);
 				else this._traceBuffer.push("  "+JSON.stringify(arguments[i]));
-		   };
+			};
 		};
 	};
 
@@ -1568,26 +1568,26 @@ Paho.MQTT = (function (global) {
 	 */
 	var Client = function (host, port, path, clientId) {
 
-	    var uri;
+		var uri;
 
 		if (typeof host !== "string")
 			throw new Error(format(ERROR.INVALID_TYPE, [typeof host, "host"]));
 
-	    if (arguments.length == 2) {
-	        // host: must be full ws:// uri
-	        // port: clientId
-	        clientId = port;
-	        uri = host;
-	        var match = uri.match(/^(wss?):\/\/((\[(.+)\])|([^\/]+?))(:(\d+))?(\/.*)$/);
-	        if (match) {
-	            host = match[4]||match[2];
-	            port = parseInt(match[7]);
-	            path = match[8];
-	        } else {
-	            throw new Error(format(ERROR.INVALID_ARGUMENT,[host,"host"]));
-	        }
-	    } else {
-	        if (arguments.length == 3) {
+		if (arguments.length == 2) {
+			// host: must be full ws:// uri
+			// port: clientId
+			clientId = port;
+			uri = host;
+			var match = uri.match(/^(wss?):\/\/((\[(.+)\])|([^\/]+?))(:(\d+))?(\/.*)$/);
+			if (match) {
+				host = match[4]||match[2];
+				port = parseInt(match[7]);
+				path = match[8];
+			} else {
+				throw new Error(format(ERROR.INVALID_ARGUMENT,[host,"host"]));
+			}
+		} else {
+			if (arguments.length == 3) {
 				clientId = path;
 				path = "/mqtt";
 			}
@@ -1604,7 +1604,7 @@ Paho.MQTT = (function (global) {
 		for (var i = 0; i<clientId.length; i++) {
 			var charCode = clientId.charCodeAt(i);
 			if (0xD800 <= charCode && charCode <= 0xDBFF)  {
-				 i++; // Surrogate pair.
+				i++; // Surrogate pair.
 			}
 			clientIdLength++;
 		}
@@ -1705,18 +1705,18 @@ Paho.MQTT = (function (global) {
 		this.connect = function (connectOptions) {
 			connectOptions = connectOptions || {} ;
 			validate(connectOptions,  {timeout:"number",
-									   userName:"string",
-									   password:"string",
-									   willMessage:"object",
-									   keepAliveInterval:"number",
-									   cleanSession:"boolean",
-									   useSSL:"boolean",
-									   invocationContext:"object",
-									   onSuccess:"function",
-									   onFailure:"function",
-									   hosts:"object",
-									   ports:"object",
-									   mqttVersion:"number"});
+				userName:"string",
+				password:"string",
+				willMessage:"object",
+				keepAliveInterval:"number",
+				cleanSession:"boolean",
+				useSSL:"boolean",
+				invocationContext:"object",
+				onSuccess:"function",
+				onFailure:"function",
+				hosts:"object",
+				ports:"object",
+				mqttVersion:"number"});
 
 			// If no keep alive interval is set, assume 60 seconds.
 			if (connectOptions.keepAliveInterval === undefined)
@@ -1836,15 +1836,15 @@ Paho.MQTT = (function (global) {
 				throw new Error("Invalid argument:"+filter);
 			subscribeOptions = subscribeOptions || {} ;
 			validate(subscribeOptions,  {qos:"number",
-										 invocationContext:"object",
-										 onSuccess:"function",
-										 onFailure:"function",
-										 timeout:"number"
-										});
+				invocationContext:"object",
+				onSuccess:"function",
+				onFailure:"function",
+				timeout:"number"
+			});
 			if (subscribeOptions.timeout && !subscribeOptions.onFailure)
 				throw new Error("subscribeOptions.timeout specified with no onFailure callback.");
 			if (typeof subscribeOptions.qos !== "undefined"
-				&& !(subscribeOptions.qos === 0 || subscribeOptions.qos === 1 || subscribeOptions.qos === 2 ))
+					&& !(subscribeOptions.qos === 0 || subscribeOptions.qos === 1 || subscribeOptions.qos === 2 ))
 				throw new Error(format(ERROR.INVALID_ARGUMENT, [subscribeOptions.qos, "subscribeOptions.qos"]));
 			client.subscribe(filter, subscribeOptions);
 		};
@@ -1882,10 +1882,10 @@ Paho.MQTT = (function (global) {
 				throw new Error("Invalid argument:"+filter);
 			unsubscribeOptions = unsubscribeOptions || {} ;
 			validate(unsubscribeOptions,  {invocationContext:"object",
-										   onSuccess:"function",
-										   onFailure:"function",
-										   timeout:"number"
-										  });
+				onSuccess:"function",
+				onFailure:"function",
+				timeout:"number"
+			});
 			if (unsubscribeOptions.timeout && !unsubscribeOptions.onFailure)
 				throw new Error("unsubscribeOptions.timeout specified with no onFailure callback.");
 			client.unsubscribe(filter, unsubscribeOptions);
@@ -2052,16 +2052,16 @@ Paho.MQTT = (function (global) {
 	var Message = function (newPayload) {
 		var payload;
 		if (   typeof newPayload === "string"
-			|| newPayload instanceof ArrayBuffer
-			|| newPayload instanceof Int8Array
-			|| newPayload instanceof Uint8Array
-			|| newPayload instanceof Int16Array
-			|| newPayload instanceof Uint16Array
-			|| newPayload instanceof Int32Array
-			|| newPayload instanceof Uint32Array
-			|| newPayload instanceof Float32Array
-			|| newPayload instanceof Float64Array
-		   ) {
+				|| newPayload instanceof ArrayBuffer
+				|| newPayload instanceof Int8Array
+				|| newPayload instanceof Uint8Array
+				|| newPayload instanceof Int16Array
+				|| newPayload instanceof Uint16Array
+				|| newPayload instanceof Int32Array
+				|| newPayload instanceof Uint32Array
+				|| newPayload instanceof Float32Array
+				|| newPayload instanceof Float64Array
+		) {
 			payload = newPayload;
 		} else {
 			throw (format(ERROR.INVALID_ARGUMENT, [newPayload, "newPayload"]));
